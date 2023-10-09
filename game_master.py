@@ -103,7 +103,9 @@ class GameMaster:
 
         current_round['winner'] = winner[0]
 
-        await self.notify_room(f"Player #{winner[0]} won with {winner[1]}", room_id)
+        choice = winner[1]
+        player = room.players[winner[0]]
+        await self.notify_room(f"Player #{player.nickname} won with {choice}", room_id)
 
         if self.can_game_be_over(room_id):
             await self.finish_game(room_id)
@@ -134,7 +136,8 @@ class GameMaster:
     async def finish_game(self, room_id):
         room = self.rooms[room_id]
         latest_round = room.get_current_round()
-        await self.notify_room(f"{latest_round['winner']} won the game!", room_id)
+        player = room.players[latest_round['winner']]
+        await self.notify_room(f"{player.nickname} won the game!", room_id)
         room.states.append(State.CLOSED)
 
 

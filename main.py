@@ -57,8 +57,10 @@ class User(pydantic.BaseModel):
 
 @app.post("/user")
 async def create_user_token(user: User) -> dict:
+    print('going to add user')
     user_id = ''.join(random.choices(string.ascii_letters, k=8))
     users[user_id] = user.nickname
+    print('added user')
     return {"token": user_id}
 
 @app.websocket("/room/{room_id}")

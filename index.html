@@ -44,11 +44,12 @@
       }
       async function joinRoom(event) {
         let token = await getToken(event);
+        console.log(token);
         ws = new WebSocket(`ws://localhost:8000/room/666?token=${token}`);
 
         ws.onmessage = function (event) {
           const response = JSON.parse(event.data);
-          const messageContent = decodeURIComponent(response.message);
+          const messageContent = decodeURIComponent(response.message || response.error);
           const messages = document.getElementById("messages");
           const message = document.createElement("li");
           const content = document.createTextNode(messageContent);
