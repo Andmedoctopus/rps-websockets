@@ -16,6 +16,7 @@ class State(Enum):
 class Player:
     token: str
     ws_connection: WebSocket
+    nickname: str
 
 @dataclass
 class Room:

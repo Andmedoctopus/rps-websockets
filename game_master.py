@@ -11,10 +11,6 @@ class GameMaster:
         self.game = game
 
     async def join_room(self, room_id: int, player: Player):
-        print("User joined", player)
-        print(f"{self.rooms=}")
-        print(f"{self.player_to_room=}")
-
         if room_id not in self.rooms:
             self.rooms[room_id] = Room(
                 room_id=room_id
@@ -30,7 +26,7 @@ class GameMaster:
         self.player_to_room[player.token] = room
 
         await player.ws_connection.accept()
-        await self.notify_room(f"User #{player.token} joined", room_id)
+        await self.notify_room(f"User #{player.nickname} joined", room_id)
 
         if len(room.players) == 2:
             room.states.append(State.WAITING_FOR_PLAYERS_CHOOSE)
@@ -42,8 +38,7 @@ class GameMaster:
         room.players.pop(player.token)
         self.player_to_room.pop(player.token)
 
-        print('dissconnect', self.rooms)
-        await self.notify_room(f"User #{player.token} left the game", room.room_id)
+        await self.notify_room(f"User #{player.nickname} left the game", room.room_id)
 
     async def process_command(self, command: dict, player: Player):
         print(f"{command=}")

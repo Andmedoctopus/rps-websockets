@@ -1,3 +1,5 @@
+import random
+import string
 from fastapi import (
     FastAPI,
     WebSocket,
@@ -7,78 +9,40 @@ from fastapi import (
     Depends,
     WebSocketDisconnect,
 )
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse
 from typing import Annotated
 
 from game_master import GameMaster
 from game import Game
 from entity import Player,  Room
+from fastapi.middleware.cors import CORSMiddleware
+import pydantic
+
 
 app = FastAPI()
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://127.0.0.1",
+    "http://127.0.0.1:8080",
+]
 
-html = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Rock Paper Scissors</title>
-    </head>
-    <body>
-        <h1>Rock Paper Scissor</h1>
-        <form action="" onsubmit="joinRoom(event)">
-        <h2>Your token: <span id="ws-jwt"></span></h2>
-            <input type="text" id="token" autocomplete="off"/>
-            <button id="join">Join</button>
-        </form>
-
-        <form action="" onsubmit="sendAction(event)" style="flex-direction: row;display: flex;">
-            <button id="rock" style="display: none">🪨</button>
-            <button id="paper" style="display: none">📜</button>
-            <button id="scissors" style="display: none">✂️</button>
-        </form>
-
-        <ul id='messages'>
-        </ul>
-        <script>
-            let ws = null;
-
-            function joinRoom(event) {
-                let token = document.getElementById("token").value
-                ws = new WebSocket(`ws://localhost:8000/room/666?token=${token}`);
-                ws.onmessage = function(event) {
-                    let messages = document.getElementById('messages')
-                    let message = document.createElement('li')
-                    let content = document.createTextNode(event.data)
-                    message.appendChild(content)
-                    messages.appendChild(message)
-                };
-
-                for (const id of ['rock', 'paper', 'scissors']) {
-                    let gameElem = document.getElementById(id);
-                    gameElem.style.display = "block"
-                }
-
-                event.preventDefault()
-            }
-
-            function sendAction(event) {
-                let choice = {choice: event.submitter.id}
-                ws.send(JSON.stringify(choice))
-                event.preventDefault()
-            }
-        </script>
-    </body>
-</html>
-"""
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def get():
-    return HTMLResponse(html)
-
-
+    return FileResponse("index.html")
 
 
 game_master = GameMaster(game=Game())
 
+users = {}
 
 async def get_user_token(
     token: Annotated[str | None, Query()] = None,
@@ -88,6 +52,14 @@ async def get_user_token(
     return token
 
 
+class User(pydantic.BaseModel):
+    nickname: str
+
+@app.post("/user")
+async def create_user_token(user: User) -> dict:
+    user_id = ''.join(random.choices(string.ascii_letters, k=8))
+    users[user_id] = user.nickname
+    return {"token": user_id}
 
 @app.websocket("/room/{room_id}")
 async def room(
@@ -95,9 +67,13 @@ async def room(
     room_id: int,
     user_token: Annotated[str, Depends(get_user_token)],
 ):
+    print(users)
+    if user_token not in users:
+        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION, reason="You have to get token first")
     player=Player(
         token=user_token,
         ws_connection=websocket,
+        nickname=users[user_token],
     )
     try:
         await game_master.join_room(room_id, player)

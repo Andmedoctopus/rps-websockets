@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rock Paper Scissors</title>
+  </head>
+  <body>
+    <h1>Rock Paper Scissor</h1>
+    <form action="">
+      <h2>Enter your nickname:</h2>
+      <input type="text" id="nickname" autocomplete="off" />
+      <button type="button" id="join">Join</button>
+    </form>
+
+    <form
+      action=""
+      onsubmit="sendAction(event)"
+      style="flex-direction: row; display: flex"
+    >
+      <button id="rock" style="display: none">🪨</button>
+      <button id="paper" style="display: none">📜</button>
+      <button id="scissors" style="display: none">✂️</button>
+    </form>
+
+    <ul id="messages"></ul>
+    <script>
+      let ws = null;
+      const joinBtn = document.getElementById("join");
+      joinBtn.addEventListener("click", joinRoom);
+      async function getToken() {
+        const nickname = document.getElementById("nickname").value;
+        try {
+          const response = await fetch("http://localhost:8000/user", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({nickname: nickname}),
+          }).then(response => response.json());
+
+          return response.token;
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      async function joinRoom(event) {
+        let token = await getToken(event);
+        ws = new WebSocket(`ws://localhost:8000/room/666?token=${token}`);
+
+        ws.onmessage = function (event) {
+          const response = JSON.parse(event.data);
+          const messageContent = decodeURIComponent(response.message);
+          const messages = document.getElementById("messages");
+          const message = document.createElement("li");
+          const content = document.createTextNode(messageContent);
+
+          message.appendChild(content);
+          messages.appendChild(message);
+        };
+
+        for (const id of ["rock", "paper", "scissors"]) {
+          let gameElem = document.getElementById(id);
+          gameElem.style.display = "block";
+        }
+
+        event.preventDefault();
+      }
+
+      function sendAction(event) {
+        let choice = { choice: event.submitter.id };
+        ws.send(JSON.stringify(choice));
+        event.preventDefault();
+      }
+    </script>
+  </body>
+</html>
