@@ -8,7 +8,15 @@
     <form action="">
       <h2>Enter your nickname:</h2>
       <input type="text" id="nickname" autocomplete="off" />
-      <button type="button" id="join">Join</button>
+      <button type="button" id="create">Create User</button>
+    </form>
+
+    <form action="">
+      <button type="button" id="createGame" style="display: none">
+        Create Game
+      </button>
+      <input type="text" id="join" autocomplete="off" style="display: none" />
+      <button type="button" id="joinGame" style="display: none">Join</button>
     </form>
 
     <form
@@ -24,8 +32,21 @@
     <ul id="messages"></ul>
     <script>
       let ws = null;
-      const joinBtn = document.getElementById("join");
-      joinBtn.addEventListener("click", joinRoom);
+      const createBtn = document.getElementById("create");
+      createBtn.addEventListener("click", getToken);
+
+      const createGameBtn = document.getElementById("createGame");
+      createGameBtn.addEventListener("click", getToken);
+
+      const joinGameBtn = document.getElementById("joinGame");
+      joinGameBtn.addEventListener("click", joinRoom);
+
+      function enableRoomTools() {
+        for (const id of ["createGame", "join", "joinGame"]) {
+          let gameElem = document.getElementById(id);
+          gameElem.style.display = "block";
+        }
+      }
       async function getToken() {
         const nickname = document.getElementById("nickname").value;
         try {
@@ -34,35 +55,46 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({nickname: nickname}),
-          }).then(response => response.json());
+            body: JSON.stringify({ nickname: nickname }),
+          }).then((response) => response.json());
 
-          return response.token;
+          document.cookie = `session=${response.token}; SameSite=None`;
+          createBtn.disabled = true;
+          enableRoomTools();
         } catch (error) {
           console.log(error);
         }
       }
-      async function joinRoom(event) {
-        let token = await getToken(event);
-        console.log(token);
-        ws = new WebSocket(`ws://localhost:8000/room/666?token=${token}`);
 
-        ws.onmessage = function (event) {
-          const response = JSON.parse(event.data);
-          const messageContent = decodeURIComponent(response.message || response.error);
-          const messages = document.getElementById("messages");
-          const message = document.createElement("li");
-          const content = document.createTextNode(messageContent);
+      function createGame(event){
+          
+        event.preventDefault();
+      }
 
-          message.appendChild(content);
-          messages.appendChild(message);
-        };
+      function processWSResponse(event) {
+        const response = JSON.parse(event.data);
+        const messageContent = decodeURIComponent(
+          response.message || response.error
+        );
+        const messages = document.getElementById("messages");
+        const message = document.createElement("li");
+        const content = document.createTextNode(messageContent);
 
+        message.appendChild(content);
+        messages.appendChild(message);
+      }
+
+      function enableGameIcons() {
         for (const id of ["rock", "paper", "scissors"]) {
           let gameElem = document.getElementById(id);
           gameElem.style.display = "block";
         }
+      }
 
+      async function joinRoom(event) {
+        room_id = 666
+        ws = new WebSocket(`ws://localhost:8000/room/${room_id}`);
+        ws.onmessage = processWSResponse;
         event.preventDefault();
       }
 

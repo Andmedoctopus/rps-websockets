@@ -1,6 +1,7 @@
 import random
 import string
 from fastapi import (
+    Cookie,
     FastAPI,
     WebSocket,
     Query,
@@ -45,11 +46,14 @@ game_master = GameMaster(game=Game())
 users = {}
 
 async def get_user_token(
+    session: Annotated[str | None, Cookie()] = None,
     token: Annotated[str | None, Query()] = None,
-):
-    if token is None:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    return token
+) -> str:
+    if token is not None:
+        return token
+    if session is not None:
+        return session
+    raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
 
 
 class User(pydantic.BaseModel):
