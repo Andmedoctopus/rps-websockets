@@ -15,7 +15,13 @@
       <button type="button" id="createGame" style="display: none">
         Create Game
       </button>
-      <input type="text" id="join" autocomplete="off" style="display: none" />
+      <input
+        type="text"
+        id="join"
+        autocomplete="off"
+        style="display: none"
+        placeholder="Game ID"
+      />
       <button type="button" id="joinGame" style="display: none">Join</button>
     </form>
 
@@ -36,10 +42,12 @@
       createBtn.addEventListener("click", getToken);
 
       const createGameBtn = document.getElementById("createGame");
-      createGameBtn.addEventListener("click", getToken);
+      createGameBtn.addEventListener("click", createGame);
 
       const joinGameBtn = document.getElementById("joinGame");
-      joinGameBtn.addEventListener("click", joinRoom);
+      joinGameBtn.addEventListener("click", joinRoomClick);
+
+      const joinInput = document.getElementById("join");
 
       function enableRoomTools() {
         for (const id of ["createGame", "join", "joinGame"]) {
@@ -47,10 +55,10 @@
           gameElem.style.display = "block";
         }
       }
-      async function getToken() {
+      async function getToken(event) {
         const nickname = document.getElementById("nickname").value;
         try {
-          const response = await fetch("http://localhost:8000/user", {
+          const response = await fetch("http://localhost:8000/api/user", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -61,13 +69,32 @@
           document.cookie = `session=${response.token}; SameSite=None`;
           createBtn.disabled = true;
           enableRoomTools();
+          event.preventDefault();
         } catch (error) {
           console.log(error);
         }
       }
 
-      function createGame(event){
-          
+      async function createGame(event) {
+        try {
+          const response = await fetch("http://localhost:8000/api/room", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((json) => {
+              createGameBtn.disabled = true;
+              joinGameBtn.disabled = true;
+              joinInput.disabled = true;
+              joinInput.value = json.room_id;
+              joinRoom();
+            });
+        } catch (error) {
+          console.log(error);
+        }
+
         event.preventDefault();
       }
 
@@ -91,10 +118,15 @@
         }
       }
 
-      async function joinRoom(event) {
-        room_id = 666
-        ws = new WebSocket(`ws://localhost:8000/room/${room_id}`);
+      function joinRoom() {
+        room_id = joinInput.value;
+        ws = new WebSocket(`ws://localhost:8000/api/room/${room_id}`);
         ws.onmessage = processWSResponse;
+        enableGameIcons();
+      }
+
+      function joinRoomClick(event) {
+        joinRoom();
         event.preventDefault();
       }
 
