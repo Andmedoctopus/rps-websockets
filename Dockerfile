@@ -4,22 +4,29 @@ ARG APP_USER=game\
     APP_GROUP=game\
     CODE_FOLDER=/code
 
-RUN apt-get update && \
-    apt-get upgrade -y
+
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y curl
+
 
 WORKDIR $CODE_FOLDER
 
 RUN groupadd $APP_GROUP && \
-    useradd -s /bin/bash -g $APP_GROUP $APP_USER -d $CODE_FOLDER && \
+    useradd -s /bin/bash -g $APP_GROUP $APP_USER -m && \
     chown -R $APP_USER:$APP_GROUP $CODE_FOLDER
 
-COPY requirements.txt .
-
-RUN python3 -m pip install -r requirements.txt
-
-COPY . .
 
 USER $APP_USER
+ENV PATH=${PATH}:/home/$APP_USER/.local/bin
 
-EXPOSE 8000
-CMD uvicorn main:app --reload --host 0.0.0.0 --port 8000
+RUN pip install -U pip && pip install poetry
+COPY pyproject.toml poetry.lock ./
+RUN poetry config virtualenvs.in-project true && poetry install
+
+COPY src .
+
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
