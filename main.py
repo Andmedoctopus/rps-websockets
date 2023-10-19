@@ -83,6 +83,7 @@ async def create_room(
             rooms.add(room_id)
             return CreatedRoom(room_id=room_id)
 
+
 @app.websocket("/api/room/{room_id}")
 async def join_room(
     websocket: WebSocket,
