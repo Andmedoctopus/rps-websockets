@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 class BaseGameElement:
     def __eq__(self, other) -> bool:
         if isinstance(other, self.__class__):

@@ -1,10 +1,9 @@
 from collections import defaultdict
-from typing import Optional
-from enum import Enum, auto
 from dataclasses import dataclass, field
-from fastapi import (
-    WebSocket,
-)
+from enum import Enum, auto
+
+from fastapi import WebSocket
+
 
 class State(Enum):
     WAITING_FOR_JOIN = auto()
@@ -12,11 +11,13 @@ class State(Enum):
     ROUND_LOCKED = auto()
     CLOSED = auto()
 
+
 @dataclass
 class Player:
     token: str
     ws_connection: WebSocket
     nickname: str
+
 
 @dataclass
 class Room:

@@ -1,24 +1,24 @@
 import random
 import string
-from fastapi import (
-    Cookie,
-    FastAPI,
-    WebSocket,
-    Query,
-    WebSocketException,
-    status,
-    Depends,
-    WebSocketDisconnect,
-)
-from fastapi.responses import FileResponse
 from typing import Annotated
 
-from game_master import GameMaster
-from game import Game
-from entity import Player,  Room
-from fastapi.middleware.cors import CORSMiddleware
 import pydantic
+from fastapi import (
+    Cookie,
+    Depends,
+    FastAPI,
+    Query,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+    status,
+)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
+from entity import Player
+from game import Game
+from game_master import GameMaster
 
 app = FastAPI()
 origins = [
@@ -36,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def get():
     return FileResponse("index.html")
@@ -45,6 +46,7 @@ game_master = GameMaster(game=Game())
 
 users = {}
 rooms = set()
+
 
 async def get_user_token(
     session: Annotated[str | None, Cookie()] = None,
@@ -60,23 +62,26 @@ async def get_user_token(
 class UserPayload(pydantic.BaseModel):
     nickname: str
 
+
 class CreatedUser(pydantic.BaseModel):
     token: str
 
+
 @app.post("/api/user")
 async def create_user_token(user: UserPayload) -> CreatedUser:
-    user_id = ''.join(random.choices(string.ascii_letters, k=8))
+    user_id = "".join(random.choices(string.ascii_letters, k=8))
     users[user_id] = user.nickname
     return CreatedUser(token=user_id)
 
+
 class CreatedRoom(pydantic.BaseModel):
     room_id: int
+
 
 @app.post("/api/room")
 async def create_room(
     user_token: Annotated[str, Depends(get_user_token)],
 ) -> CreatedRoom:
-
     while True:
         room_id = random.randint(10000, 99999)
         if room_id not in rooms:
@@ -91,11 +96,15 @@ async def join_room(
     user_token: Annotated[str, Depends(get_user_token)],
 ):
     if room_id not in rooms:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION, reason="This room does not exist")
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="This room does not exist"
+        )
     if user_token not in users:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION, reason="You have to get token first")
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="You have to get token first"
+        )
 
-    player=Player(
+    player = Player(
         token=user_token,
         ws_connection=websocket,
         nickname=users[user_token],
@@ -103,7 +112,9 @@ async def join_room(
     try:
         await game_master.join_room(room_id, player)
     except ValueError as exc:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION, reason=exc.args[0])
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason=exc.args[0]
+        )
 
     while True:
         print("start process", websocket, user_token)

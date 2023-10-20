@@ -7,5 +7,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./src:/code/src
+      - ./pyproject.toml:/code/pyproject.toml
     ports:
       - 8000:8000
