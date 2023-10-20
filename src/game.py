@@ -11,7 +11,7 @@ class Scissors(BaseGameElement):
             return True
         if isinstance(other, Rock) or isinstance(other, Scissors):
             return False
-        raise NotImplemented(f"Can't compare Scissors with {other}")
+        raise NotImplementedError(f"Can't compare Scissors with {other}")
 
 
 class Rock(BaseGameElement):
@@ -20,7 +20,7 @@ class Rock(BaseGameElement):
             return True
         if isinstance(other, Paper) or isinstance(other, Rock):
             return False
-        raise NotImplemented(f"Can't compare Rock with {other}")
+        raise NotImplementedError(f"Can't compare Rock with {other}")
 
 
 class Paper(BaseGameElement):
@@ -29,7 +29,7 @@ class Paper(BaseGameElement):
             return True
         if isinstance(other, Scissors) or isinstance(other, Paper):
             return False
-        raise NotImplemented(f"Can't compare Paper with {other}")
+        raise NotImplementedError(f"Can't compare Paper with {other}")
 
 
 class Game:

@@ -91,7 +91,7 @@ class GameMaster:
         player1, player2 = current_round.items()
 
         if player1[1] == player2[1]:
-            await self.notify_room(f"Draw", room_id)
+            await self.notify_room("Draw", room_id)
             self.start_next_round(room_id)
             return
 
