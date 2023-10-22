@@ -32,5 +32,4 @@ COPY ./tests tests/
 COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
 
-COPY run-server.sh /
-CMD ["/run-server.sh"]
+CMD ["uvicorn", "rps.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000", "--reload-dir", "rps"]

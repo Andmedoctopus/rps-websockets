@@ -39,7 +39,7 @@ app.add_middleware(
 
 @app.get("/")
 async def get():
-    return FileResponse("index.html")
+    return FileResponse("rps/index.html")
 
 
 game_master = GameMaster(game=Game())

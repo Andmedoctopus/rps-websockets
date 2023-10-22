@@ -32,4 +32,4 @@ tests:
 
 .PHONY: run
 run:
-	docker copmpose up --build
+	docker compose up --build
