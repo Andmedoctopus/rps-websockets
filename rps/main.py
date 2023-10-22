@@ -16,9 +16,9 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from entity import Player
-from game import Game
-from game_master import GameMaster
+from rps.entity import Player
+from rps.game import Game
+from rps.game_master import GameMaster
 
 app = FastAPI()
 origins = [

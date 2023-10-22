@@ -1,4 +1,4 @@
-PROJECT_CODE_PATH=/code/src
+PROJECT_CODE_PATH=/code/
 
 .PHONY: format-black
 format-black:
@@ -25,3 +25,8 @@ import-check:
 .PHONY: format-check
 format-check:
 	docker compose run --rm app sh -c "black --check ${PROJECT_CODE_PATH}"
+
+
+.PHONY: tests
+tests:
+	docker compose run --rm app sh -c "pytest"

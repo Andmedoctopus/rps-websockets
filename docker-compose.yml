@@ -6,7 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./src:/code/src
+      - ./rps:/code/rps
+      - ./tests:/code/tests
       - ./pyproject.toml:/code/pyproject.toml
     ports:
       - 8000:8000

@@ -18,15 +18,19 @@ RUN groupadd $APP_GROUP && \
 
 
 USER $APP_USER
-ENV PATH=${PATH}:/home/$APP_USER/.local/bin
+ENV PATH=${PATH}:/home/$APP_USER/.local/bin \
+    PYTHONPATH=${CODE_FOLDER}
 
 RUN pip install -U pip && pip install poetry
 COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.in-project true && poetry install
 
-COPY src .
+COPY ./rps rps/
+COPY ./tests tests/
+
 
 COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+COPY run-server.sh /
+CMD ["/run-server.sh"]

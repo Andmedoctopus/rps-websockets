@@ -1,8 +1,8 @@
 import asyncio
 from collections import Counter
 
-from entity import Player, Room, State
-from game import Game
+from rps.entity import Player, Room, State
+from rps.game import Game
 
 
 class GameMaster:
