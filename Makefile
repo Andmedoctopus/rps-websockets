@@ -26,7 +26,10 @@ import-check:
 format-check:
 	docker compose run --rm app sh -c "black --check ${PROJECT_CODE_PATH}"
 
-
 .PHONY: tests
 tests:
 	docker compose run --rm app sh -c "pytest"
+
+.PHONY: run
+run:
+	docker copmpose up --build
