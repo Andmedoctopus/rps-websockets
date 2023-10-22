@@ -10,6 +10,9 @@ jobs:
     # Checkout code
     - uses: actions/checkout@master
 
-    - name: Run check
+    - name: Run tests
+      run: make tests
+
+    - name: Run lint
       run: make lint
 
