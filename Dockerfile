@@ -25,6 +25,8 @@ RUN pip install -U pip && pip install poetry
 COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.in-project true && poetry install
 
+COPY index.html .
+
 COPY ./rps rps/
 COPY ./tests tests/
 

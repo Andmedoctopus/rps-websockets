@@ -13,6 +13,9 @@ def client():
 
 
 def test_full_game_session(client: TestClient):
+    main_page = client.get("/")
+    assert main_page.text
+
     users_token = []
 
     for i in range(1, 3):
